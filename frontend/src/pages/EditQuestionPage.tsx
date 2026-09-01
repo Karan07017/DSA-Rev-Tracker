@@ -186,7 +186,7 @@ export function EditQuestionPage() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Difficulty</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select difficulty" />
@@ -209,7 +209,7 @@ export function EditQuestionPage() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Help Taken</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Did you take help?" />
