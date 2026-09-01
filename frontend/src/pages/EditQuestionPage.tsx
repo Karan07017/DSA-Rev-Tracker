@@ -48,7 +48,7 @@ export function EditQuestionPage() {
   const [isFetching, setIsFetching] = useState(true)
 
   const form = useForm<any>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       name: "",
       link: "",
