@@ -47,7 +47,7 @@ export function EditQuestionPage() {
   const { id } = useParams<{ id: string }>()
   const [isFetching, setIsFetching] = useState(true)
 
-  const form = useForm<QuestionFormValues>({
+  const form = useForm<any>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
