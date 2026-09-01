@@ -8,6 +8,7 @@ const router = Router();
 router.use(requireAuth);
 
 router.get('/today', revisionController.getTodaysRevisions);
+router.get('/date', revisionController.getRevisionsByDate);
 router.patch('/:id/complete', revisionController.markRevisionComplete);
 
 export default router;

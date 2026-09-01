@@ -38,6 +38,51 @@ export const revisionController = {
   },
 
   /**
+   * Get Revisions by specific date
+   * Query param: ?date=YYYY-MM-DD
+   */
+  async getRevisionsByDate(req: Request, res: Response) {
+    try {
+      const user = req.user;
+      if (!user || !user.id) {
+        return res.status(401).json({ error: 'User not authenticated' });
+      }
+
+      const { date } = req.query;
+      if (!date || typeof date !== 'string') {
+        return res.status(400).json({ error: 'Date query parameter is required (YYYY-MM-DD)' });
+      }
+
+      const targetDate = new Date(date);
+      if (isNaN(targetDate.getTime())) {
+        return res.status(400).json({ error: 'Invalid date format' });
+      }
+
+      // Create UTC boundaries for the specific day
+      const startOfDay = new Date(targetDate);
+      startOfDay.setUTCHours(0, 0, 0, 0);
+
+      const endOfDay = new Date(targetDate);
+      endOfDay.setUTCHours(23, 59, 59, 999);
+
+      const revisions = await Revision.find({
+        user: user.id,
+        revisionDate: {
+          $gte: startOfDay,
+          $lte: endOfDay,
+        }
+      })
+      .populate('question')
+      .sort({ isCompleted: 1, createdAt: 1 }); // Uncompleted first
+
+      return res.status(200).json({ revisions });
+    } catch (error: any) {
+      console.error('Error fetching revisions by date:', error);
+      return res.status(500).json({ error: 'Failed to fetch revisions by date', details: error.message });
+    }
+  },
+
+  /**
    * Mark a specific revision as complete
    */
   async markRevisionComplete(req: Request, res: Response) {
