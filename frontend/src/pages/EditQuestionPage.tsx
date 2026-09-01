@@ -23,16 +23,12 @@ import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 
 const formSchema = z.object({
-  name: z.string().min(2, "Question name is required"),
-  link: z.string().url("Must be a valid URL"),
-  difficulty: z.enum(["Easy", "Medium", "Hard"], {
-    required_error: "Please select a difficulty",
-  }),
-  topic: z.string().min(2, "Topic is required"),
-  platform: z.string().min(2, "Platform is required"),
-  helpTaken: z.enum(["No Help", "Hint", "Discussion", "Editorial", "YouTube", "AI"], {
-    required_error: "Please select the help level taken",
-  }),
+  name: z.string().min(2, { message: "Question name is required." }),
+  link: z.string().url({ message: "Must be a valid URL." }),
+  difficulty: z.enum(["Easy", "Medium", "Hard"]),
+  topic: z.string().min(2, { message: "Topic is required." }),
+  platform: z.string().min(2, { message: "Platform is required." }),
+  helpTaken: z.enum(["No Help", "Hint", "Discussion", "Editorial", "YouTube", "AI"]),
   approach: z.string().optional(),
   remarks: z.string().optional(),
   timeComplexity: z.string().optional(),
