@@ -25,10 +25,11 @@ export const authController = {
       const token = authService.generateToken(user);
 
       // 4. Set JWT in HTTP-only cookie
+      const isProduction = config.nodeEnv === 'production';
       res.cookie('token', token, {
         httpOnly: true,
-        secure: config.nodeEnv === 'production',
-        sameSite: 'lax',
+        secure: isProduction,
+        sameSite: isProduction ? 'none' : 'lax',
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
 
@@ -52,7 +53,12 @@ export const authController = {
    * Handle Logout
    */
   logout(req: Request, res: Response) {
-    res.clearCookie('token');
+    const isProduction = config.nodeEnv === 'production';
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? 'none' : 'lax',
+    });
     res.status(200).json({ message: 'Logged out successfully' });
   },
 
