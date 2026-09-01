@@ -10,6 +10,7 @@ import { EditQuestionPage } from "@/pages/EditQuestionPage"
 import { AllQuestionsPage } from "@/pages/AllQuestionsPage"
 import { StatisticsPage } from "@/pages/StatisticsPage"
 import { CalendarPage } from "@/pages/CalendarPage"
+import { TodosPage } from "@/pages/TodosPage"
 
 const router = createBrowserRouter([
   {
@@ -47,6 +48,10 @@ const router = createBrowserRouter([
       {
         path: "questions",
         element: <AllQuestionsPage />,
+      },
+      {
+        path: "todos",
+        element: <TodosPage />,
       },
       {
         path: "statistics",

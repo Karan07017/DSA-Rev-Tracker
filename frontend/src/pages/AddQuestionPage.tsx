@@ -45,16 +45,22 @@ type QuestionFormValues = z.infer<typeof questionFormSchema>
 
 export function AddQuestionPage() {
   const navigate = useNavigate()
+  
+  // Read query params if we are coming from the To-Do list
+  const searchParams = new URLSearchParams(window.location.search)
+  const todoId = searchParams.get('todoId')
+  const defaultName = searchParams.get('name') || ""
+  const defaultLink = searchParams.get('link') || ""
 
   const form = useForm<any>({
     resolver: zodResolver(questionFormSchema),
     defaultValues: {
-      name: "",
-      link: "",
-      difficulty: "Medium",
+      name: defaultName,
+      link: defaultLink,
+      difficulty: undefined,
       topic: "",
       platform: "LeetCode",
-      helpTaken: "No Help",
+      helpTaken: undefined,
       approach: "",
       remarks: "",
       timeComplexity: "",
@@ -65,7 +71,8 @@ export function AddQuestionPage() {
 
   async function onSubmit(data: QuestionFormValues) {
     try {
-      await api.post("/questions", data)
+      const payload = todoId ? { ...data, todoId } : data;
+      await api.post("/questions", payload)
       toast.success("Question saved successfully!")
       navigate("/dashboard")
     } catch (error: any) {

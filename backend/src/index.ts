@@ -8,6 +8,7 @@ import questionRoutes from './routes/questionRoutes';
 import revisionRoutes from './routes/revisionRoutes';
 import statisticsRoutes from './routes/statisticsRoutes';
 import calendarRoutes from './routes/calendarRoutes';
+import todoRoutes from './routes/todoRoutes';
 
 const app = express();
 const PORT = config.port;
@@ -28,6 +29,7 @@ app.use('/api/questions', questionRoutes);
 app.use('/api/revisions', revisionRoutes);
 app.use('/api/statistics', statisticsRoutes);
 app.use('/api/calendar', calendarRoutes);
+app.use('/api/todos', todoRoutes);
 
 app.get('/', (req, res) => {
   res.send('DSA Revision Tracker API is running...');

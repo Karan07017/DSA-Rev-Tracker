@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom"
-import { BarChart3, CalendarDays, LayoutDashboard, List, PlusCircle } from "lucide-react"
+import { BarChart3, CalendarDays, LayoutDashboard, List, PlusCircle, CheckSquare } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 
@@ -24,6 +24,11 @@ const navItems = [
     title: "Calendar",
     href: "/dashboard/calendar",
     icon: CalendarDays,
+  },
+  {
+    title: "To-Do List",
+    href: "/dashboard/todos",
+    icon: CheckSquare,
   },
 ]
 

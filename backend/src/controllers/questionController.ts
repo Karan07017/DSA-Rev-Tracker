@@ -26,6 +26,7 @@ export const questionController = {
         veryImportant,
         platform,
         solvedDate,
+        todoId,
       } = req.body;
 
       // Basic validation
@@ -81,6 +82,18 @@ export const questionController = {
       });
 
       await Revision.insertMany(revisionDocs);
+      
+      // If a todoId was provided, delete the todo
+      if (todoId) {
+        try {
+          // Import Todo model inside or globally
+          // We need to import Todo at the top of questionController.ts
+          const { Todo } = require('../models/Todo');
+          await Todo.findOneAndDelete({ _id: todoId, user: user.id });
+        } catch (todoErr) {
+          console.error("Failed to delete todo after creating question:", todoErr);
+        }
+      }
 
       return res.status(201).json({
         message: 'Question created and revisions scheduled successfully',
