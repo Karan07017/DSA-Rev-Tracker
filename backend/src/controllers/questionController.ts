@@ -153,4 +153,78 @@ export const questionController = {
       return res.status(500).json({ error: 'Failed to fetch questions', details: error.message });
     }
   },
+
+  /**
+   * Get a single question by ID
+   */
+  async getQuestionById(req: Request, res: Response) {
+    try {
+      const user = req.user;
+      if (!user) return res.status(401).json({ error: 'Unauthorized' });
+
+      const question = await Question.findOne({ _id: req.params.id, user: user.id });
+      if (!question) return res.status(404).json({ error: 'Question not found' });
+
+      return res.status(200).json({ question });
+    } catch (error: any) {
+      return res.status(500).json({ error: 'Failed to fetch question' });
+    }
+  },
+
+  /**
+   * Update a question
+   */
+  async updateQuestion(req: Request, res: Response) {
+    try {
+      const user = req.user;
+      if (!user) return res.status(401).json({ error: 'Unauthorized' });
+
+      const questionId = req.params.id;
+      const updates = req.body;
+
+      // Prevent updating user field
+      delete updates.user;
+
+      const question = await Question.findOneAndUpdate(
+        { _id: questionId, user: user.id },
+        { $set: updates },
+        { new: true, runValidators: true }
+      );
+
+      if (!question) {
+        return res.status(404).json({ error: 'Question not found' });
+      }
+
+      return res.status(200).json({ message: 'Question updated successfully', question });
+    } catch (error: any) {
+      console.error('Error updating question:', error);
+      return res.status(500).json({ error: 'Failed to update question', details: error.message });
+    }
+  },
+
+  /**
+   * Delete a question (and its scheduled revisions)
+   */
+  async deleteQuestion(req: Request, res: Response) {
+    try {
+      const user = req.user;
+      if (!user) return res.status(401).json({ error: 'Unauthorized' });
+
+      const questionId = req.params.id;
+
+      const question = await Question.findOneAndDelete({ _id: questionId, user: user.id });
+      
+      if (!question) {
+        return res.status(404).json({ error: 'Question not found' });
+      }
+
+      // Also delete associated revisions
+      await Revision.deleteMany({ question: questionId, user: user.id });
+
+      return res.status(200).json({ message: 'Question and associated revisions deleted successfully' });
+    } catch (error: any) {
+      console.error('Error deleting question:', error);
+      return res.status(500).json({ error: 'Failed to delete question', details: error.message });
+    }
+  }
 };

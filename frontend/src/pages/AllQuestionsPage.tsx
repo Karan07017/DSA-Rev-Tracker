@@ -7,26 +7,15 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination"
-import { Badge } from "@/components/ui/badge"
+import { useDebounce } from "@/hooks/useDebounce"
 import { Input } from "@/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { ExternalLink, Loader2, Search, FilterX } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
+import { Search, Loader2, FilterX, ExternalLink, Pencil, Trash2 } from "lucide-react"
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
+import { toast } from "sonner"
 
 interface Question {
   _id: string;
@@ -70,8 +59,9 @@ export function AllQuestionsPage() {
   const [search, setSearch] = useState("")
   const [topic, setTopic] = useState("")
   const [difficulty, setDifficulty] = useState<string>("all")
-
-  // Debounced Values
+  
+  const navigate = useNavigate()
+  
   const debouncedSearch = useDebounce(search, 500)
   const debouncedTopic = useDebounce(topic, 500)
 
@@ -80,31 +70,42 @@ export function AllQuestionsPage() {
     setCurrentPage(1)
   }, [debouncedSearch, debouncedTopic, difficulty])
 
-  useEffect(() => {
-    const fetchQuestions = async () => {
-      try {
-        setIsLoading(true)
-        
-        const params = new URLSearchParams()
-        params.append("page", currentPage.toString())
-        params.append("limit", "10")
-        
-        if (debouncedSearch) params.append("search", debouncedSearch)
-        if (debouncedTopic) params.append("topic", debouncedTopic)
-        if (difficulty && difficulty !== "all") params.append("difficulty", difficulty)
+  const fetchQuestions = async () => {
+    try {
+      setIsLoading(true)
+      
+      const params = new URLSearchParams()
+      params.append("page", currentPage.toString())
+      params.append("limit", "10")
+      
+      if (debouncedSearch) params.append("search", debouncedSearch)
+      if (debouncedTopic) params.append("topic", debouncedTopic)
+      if (difficulty && difficulty !== "all") params.append("difficulty", difficulty)
 
-        const response = await api.get(`/questions?${params.toString()}`)
-        setQuestions(response.data.questions)
-        setPagination(response.data.pagination)
-      } catch (err: any) {
-        setError(err.response?.data?.error || "Failed to fetch questions.")
-      } finally {
-        setIsLoading(false)
-      }
+      const response = await api.get(`/questions?${params.toString()}`)
+      setQuestions(response.data.questions)
+      setPagination(response.data.pagination)
+    } catch (err: any) {
+      setError(err.response?.data?.error || "Failed to fetch questions.")
+    } finally {
+      setIsLoading(false)
     }
+  }
 
+  useEffect(() => {
     fetchQuestions()
   }, [currentPage, debouncedSearch, debouncedTopic, difficulty])
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("Are you sure you want to delete this question? This will also delete its scheduled revisions.")) return;
+    try {
+      await api.delete(`/questions/${id}`)
+      toast.success("Question deleted successfully!")
+      fetchQuestions()
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || "Failed to delete question.")
+    }
+  }
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -206,12 +207,13 @@ export function AllQuestionsPage() {
               <TableHead className="hidden sm:table-cell">Platform</TableHead>
               <TableHead className="hidden lg:table-cell">Solved Date</TableHead>
               <TableHead className="text-right">Link</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {questions.length === 0 && !isLoading ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
+                <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
                   No questions match your filters.
                 </TableCell>
               </TableRow>
@@ -239,6 +241,26 @@ export function AllQuestionsPage() {
                       Solve
                       <ExternalLink className="ml-1 h-3 w-3" />
                     </a>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8 text-muted-foreground hover:text-primary"
+                        onClick={() => navigate(`/dashboard/edit/${question._id}`)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                        onClick={() => handleDelete(question._id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))

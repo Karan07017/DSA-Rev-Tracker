@@ -6,6 +6,7 @@ import { LoginPage } from "@/pages/LoginPage"
 import { DashboardPage } from "@/pages/DashboardPage"
 import { NotFoundPage } from "@/pages/NotFoundPage"
 import { AddQuestionPage } from "@/pages/AddQuestionPage"
+import { EditQuestionPage } from "@/pages/EditQuestionPage"
 import { AllQuestionsPage } from "@/pages/AllQuestionsPage"
 import { StatisticsPage } from "@/pages/StatisticsPage"
 import { CalendarPage } from "@/pages/CalendarPage"
@@ -38,6 +39,10 @@ const router = createBrowserRouter([
       {
         path: "add",
         element: <AddQuestionPage />,
+      },
+      {
+        path: "edit/:id",
+        element: <EditQuestionPage />,
       },
       {
         path: "questions",
