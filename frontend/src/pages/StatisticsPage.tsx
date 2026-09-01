@@ -1,8 +1,16 @@
 import { useEffect, useState } from "react"
 import api from "@/lib/api"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Progress } from "@/components/ui/progress"
 import { Brain, Target, Flame, Activity, TrendingUp, AlertTriangle } from "lucide-react"
+
+interface TopicMastery {
+  topic: string;
+  total: number;
+  strongCount: number;
+  masteryPercentage: number;
+}
 
 interface Statistics {
   totalQuestions: number;
@@ -11,10 +19,8 @@ interface Statistics {
     medium: number;
     hard: number;
   };
-  topics: {
-    strong: number;
-    weak: number;
-  };
+  topStrong: TopicMastery[];
+  topWeak: TopicMastery[];
 }
 
 export function StatisticsPage() {
@@ -75,7 +81,7 @@ export function StatisticsPage() {
   if (!stats) return null;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-10">
       <div>
         <h2 className="text-3xl font-bold tracking-tight">Statistics</h2>
         <p className="text-muted-foreground">
@@ -83,97 +89,111 @@ export function StatisticsPage() {
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-3">
         {/* Total Questions */}
-        <Card>
+        <Card className="md:col-span-3 lg:col-span-1">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Solved</CardTitle>
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalQuestions}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-4xl font-bold mt-2">{stats.totalQuestions}</div>
+            <p className="text-xs text-muted-foreground mt-1">
               Questions tracked in your library
             </p>
           </CardContent>
         </Card>
 
-        {/* Strong Topics */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Strong Topics</CardTitle>
-            <Brain className="h-4 w-4 text-green-500" />
+        {/* Difficulty Breakdown (Compact) */}
+        <Card className="md:col-span-3 lg:col-span-2">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Difficulty Breakdown</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-500">{stats.topics.strong}</div>
-            <p className="text-xs text-muted-foreground">
-              Solved entirely without help
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Weak Topics */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Weak Topics</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-red-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-500">{stats.topics.weak}</div>
-            <p className="text-xs text-muted-foreground">
-              Required hints, tutorials, or AI
-            </p>
+            <div className="flex flex-col sm:flex-row gap-4 mt-2">
+              <div className="flex-1 p-3 rounded-lg border-green-500/20 bg-green-500/5 border">
+                <div className="text-xs font-medium text-green-600 dark:text-green-400 mb-1 flex items-center justify-between">
+                  Easy <Target className="h-3 w-3" />
+                </div>
+                <div className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.difficulty.easy}</div>
+              </div>
+              <div className="flex-1 p-3 rounded-lg border-yellow-500/20 bg-yellow-500/5 border">
+                <div className="text-xs font-medium text-yellow-600 dark:text-yellow-400 mb-1 flex items-center justify-between">
+                  Medium <TrendingUp className="h-3 w-3" />
+                </div>
+                <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{stats.difficulty.medium}</div>
+              </div>
+              <div className="flex-1 p-3 rounded-lg border-red-500/20 bg-red-500/5 border">
+                <div className="text-xs font-medium text-red-600 dark:text-red-400 mb-1 flex items-center justify-between">
+                  Hard <Flame className="h-3 w-3" />
+                </div>
+                <div className="text-2xl font-bold text-red-600 dark:text-red-400">{stats.difficulty.hard}</div>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
 
-      <h3 className="text-xl font-semibold tracking-tight mt-8 mb-4">Difficulty Breakdown</h3>
-      <div className="grid gap-4 md:grid-cols-3">
-        {/* Easy */}
-        <Card className="border-green-500/20 bg-green-500/5">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-green-600 dark:text-green-400">Easy</CardTitle>
-            <Target className="h-4 w-4 text-green-600 dark:text-green-400" />
+      <div className="grid gap-4 md:grid-cols-2 mt-4">
+        {/* Top Strong Topics */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Brain className="h-5 w-5 text-green-500" />
+              Strong Topics
+            </CardTitle>
+            <CardDescription>
+              Topics where you rarely need help (highest mastery %)
+            </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-green-600 dark:text-green-400">
-              {stats.difficulty.easy}
-            </div>
-            <p className="text-xs text-green-600/80 dark:text-green-400/80 mt-1">
-              Questions
-            </p>
+          <CardContent className="space-y-6">
+            {stats.topStrong.length === 0 ? (
+              <div className="text-sm text-muted-foreground text-center py-4">No data available yet.</div>
+            ) : (
+              stats.topStrong.map((t, index) => (
+                <div key={index} className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium truncate pr-4">{t.topic}</span>
+                    <span className="text-green-500 font-bold shrink-0">{Math.round(t.masteryPercentage)}%</span>
+                  </div>
+                  <Progress value={t.masteryPercentage} className="h-2 bg-secondary" indicatorColor="bg-green-500" />
+                  <p className="text-[10px] text-muted-foreground text-right">
+                    {t.strongCount} / {t.total} solved without help
+                  </p>
+                </div>
+              ))
+            )}
           </CardContent>
         </Card>
 
-        {/* Medium */}
-        <Card className="border-yellow-500/20 bg-yellow-500/5">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-yellow-600 dark:text-yellow-400">Medium</CardTitle>
-            <TrendingUp className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+        {/* Top Weak Topics */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-red-500" />
+              Topics to Improve
+            </CardTitle>
+            <CardDescription>
+              Topics where you frequently use hints or tutorials
+            </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-yellow-600 dark:text-yellow-400">
-              {stats.difficulty.medium}
-            </div>
-            <p className="text-xs text-yellow-600/80 dark:text-yellow-400/80 mt-1">
-              Questions
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Hard */}
-        <Card className="border-red-500/20 bg-red-500/5">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-red-600 dark:text-red-400">Hard</CardTitle>
-            <Flame className="h-4 w-4 text-red-600 dark:text-red-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-red-600 dark:text-red-400">
-              {stats.difficulty.hard}
-            </div>
-            <p className="text-xs text-red-600/80 dark:text-red-400/80 mt-1">
-              Questions
-            </p>
+          <CardContent className="space-y-6">
+            {stats.topWeak.length === 0 ? (
+              <div className="text-sm text-muted-foreground text-center py-4">No weak topics found! 🎉</div>
+            ) : (
+              stats.topWeak.map((t, index) => (
+                <div key={index} className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium truncate pr-4">{t.topic}</span>
+                    <span className="text-red-500 font-bold shrink-0">{Math.round(t.masteryPercentage)}%</span>
+                  </div>
+                  <Progress value={t.masteryPercentage} className="h-2 bg-secondary" indicatorColor="bg-red-500" />
+                  <p className="text-[10px] text-muted-foreground text-right">
+                    {t.total - t.strongCount} / {t.total} required help
+                  </p>
+                </div>
+              ))
+            )}
           </CardContent>
         </Card>
       </div>
