@@ -1,12 +1,6 @@
 import { useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
 import api from "@/lib/api"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
 import { useDebounce } from "@/hooks/useDebounce"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
