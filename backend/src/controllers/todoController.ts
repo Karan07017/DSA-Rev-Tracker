@@ -44,7 +44,10 @@ export const todoController = {
         return res.status(401).json({ error: 'User not authenticated' });
       }
 
-      const todos = await Todo.find({ user: user.id }).sort({ createdAt: -1 });
+      // Sorted alphabetically by name (A-Z)
+      const todos = await Todo.find({ user: user.id })
+        .collation({ locale: 'en', strength: 2 }) // Case-insensitive sorting
+        .sort({ name: 1 });
 
       return res.status(200).json({
         message: 'Todos retrieved successfully',
