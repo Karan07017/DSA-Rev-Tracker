@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
 import { ExternalLink, CheckCircle2, Clock, CalendarDays } from "lucide-react"
 import { toast } from "sonner"
+import { QuestionDetailsDialog } from "@/components/QuestionDetailsDialog"
 
 interface Question {
   _id: string;
@@ -14,6 +15,13 @@ interface Question {
   difficulty: "Easy" | "Medium" | "Hard";
   topic: string;
   platform: string;
+  solvedDate: string;
+  helpTaken?: string;
+  timeComplexity?: string;
+  spaceComplexity?: string;
+  approach?: string;
+  remarks?: string;
+  veryImportant?: boolean;
 }
 
 interface Revision {
@@ -28,6 +36,8 @@ export function DashboardPage() {
   const [revisions, setRevisions] = useState<Revision[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
 
   useEffect(() => {
     const fetchTodayRevisions = async () => {
@@ -124,7 +134,14 @@ export function DashboardPage() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {revisions.map((revision) => (
-            <Card key={revision._id} className="flex flex-col">
+            <Card 
+              key={revision._id} 
+              className="flex flex-col cursor-pointer hover:border-primary transition-colors"
+              onClick={() => {
+                setSelectedQuestion(revision.question)
+                setIsDialogOpen(true)
+              }}
+            >
               <CardHeader>
                 <div className="flex justify-between items-start gap-4">
                   <CardTitle className="line-clamp-2 text-lg">
@@ -156,7 +173,7 @@ export function DashboardPage() {
               </CardContent>
 
               <CardFooter className="flex gap-2">
-                <Button variant="outline" className="w-full" asChild>
+                <Button variant="outline" className="w-full" asChild onClick={(e) => e.stopPropagation()}>
                   <a href={revision.question.link} target="_blank" rel="noopener noreferrer">
                     <ExternalLink className="w-4 h-4 mr-2" />
                     Solve
@@ -164,7 +181,8 @@ export function DashboardPage() {
                 </Button>
                 <Button 
                   className="w-full"
-                  onClick={async () => {
+                  onClick={async (e) => {
+                    e.stopPropagation()
                     try {
                       await api.patch(`/revisions/${revision._id}/complete`)
                       setRevisions(prev => prev.filter(r => r._id !== revision._id))
@@ -182,6 +200,12 @@ export function DashboardPage() {
           ))}
         </div>
       )}
+
+      <QuestionDetailsDialog 
+        question={selectedQuestion as any} 
+        isOpen={isDialogOpen} 
+        onClose={() => setIsDialogOpen(false)} 
+      />
     </div>
   )
 }

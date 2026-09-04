@@ -3,7 +3,8 @@ import { startOfMonth, endOfMonth, format } from "date-fns"
 import api from "@/lib/api"
 import { Calendar } from "@/components/ui/calendar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
-import { Loader2, CalendarDays, Clock, ExternalLink, CheckCircle2 } from "lucide-react"
+import { Loader2, ExternalLink, Clock, CalendarDays, CheckCircle2 } from "lucide-react"
+import { QuestionDetailsDialog } from "@/components/QuestionDetailsDialog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 
@@ -30,6 +31,8 @@ interface Revision {
 }
 
 export function CalendarPage() {
+  const [selectedQuestion, setSelectedQuestion] = useState<any | null>(null)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date())
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
   const [calendarData, setCalendarData] = useState<CalendarData[]>([])
@@ -245,7 +248,14 @@ export function CalendarPage() {
             ) : (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {dayRevisions.map((rev) => (
-                  <Card key={rev._id} className={`flex flex-col ${rev.isCompleted ? 'opacity-60' : ''}`}>
+                  <Card 
+                    key={rev._id} 
+                    className={`flex flex-col cursor-pointer hover:border-primary transition-colors ${rev.isCompleted ? 'opacity-60' : ''}`}
+                    onClick={() => {
+                      setSelectedQuestion(rev.question as any)
+                      setIsDialogOpen(true)
+                    }}
+                  >
                     <CardHeader className="pb-3">
                       <div className="flex justify-between items-start gap-4">
                         <CardTitle className="line-clamp-1 text-base" title={rev.question.name}>
@@ -272,7 +282,7 @@ export function CalendarPage() {
                           Completed
                         </div>
                       ) : (
-                        <Button variant="outline" className="w-full h-8 text-xs" asChild>
+                        <Button variant="outline" className="w-full h-8 text-xs" asChild onClick={(e) => e.stopPropagation()}>
                           <a href={rev.question.link} target="_blank" rel="noopener noreferrer">
                             <ExternalLink className="w-3 h-3 mr-2" />
                             View Problem
@@ -287,6 +297,12 @@ export function CalendarPage() {
           </CardContent>
         </Card>
       )}
+
+      <QuestionDetailsDialog 
+        question={selectedQuestion as any} 
+        isOpen={isDialogOpen} 
+        onClose={() => setIsDialogOpen(false)} 
+      />
     </div>
   )
 }

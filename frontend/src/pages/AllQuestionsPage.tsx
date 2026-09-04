@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { Search, Loader2, FilterX, ExternalLink, Pencil, Trash2 } from "lucide-react"
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
 import { toast } from "sonner"
+import { QuestionDetailsDialog } from "@/components/QuestionDetailsDialog"
 
 interface Question {
   _id: string;
@@ -19,6 +20,13 @@ interface Question {
   topic: string;
   platform: string;
   solvedDate: string;
+  // Included fields for details dialog
+  helpTaken?: string;
+  timeComplexity?: string;
+  spaceComplexity?: string;
+  approach?: string;
+  remarks?: string;
+  veryImportant?: boolean;
 }
 
 interface PaginationMetadata {
@@ -35,6 +43,10 @@ export function AllQuestionsPage() {
   const [pagination, setPagination] = useState<PaginationMetadata | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  
+  // Details Dialog State
+  const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
   
   // Filter States
   const [currentPage, setCurrentPage] = useState(1)
@@ -201,7 +213,14 @@ export function AllQuestionsPage() {
               </TableRow>
             ) : (
               questions.map((question) => (
-                <TableRow key={question._id}>
+                <TableRow 
+                  key={question._id} 
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => {
+                    setSelectedQuestion(question)
+                    setIsDialogOpen(true)
+                  }}
+                >
                   <TableCell className="font-medium">{question.name}</TableCell>
                   <TableCell>
                     <Badge variant="secondary" className={getDifficultyColor(question.difficulty)}>
@@ -218,7 +237,8 @@ export function AllQuestionsPage() {
                       href={question.link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center text-sm font-medium text-primary hover:underline"
+                      className="inline-flex items-center text-sm font-medium text-primary hover:underline relative z-10"
+                      onClick={(e) => e.stopPropagation()}
                     >
                       Solve
                       <ExternalLink className="ml-1 h-3 w-3" />
@@ -230,7 +250,7 @@ export function AllQuestionsPage() {
                         variant="ghost" 
                         size="icon" 
                         className="h-8 w-8 text-muted-foreground hover:text-primary"
-                        onClick={() => navigate(`/dashboard/edit/${question._id}`)}
+                        onClick={(e) => { e.stopPropagation(); navigate(`/dashboard/edit/${question._id}`); }}
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
@@ -238,7 +258,7 @@ export function AllQuestionsPage() {
                         variant="ghost" 
                         size="icon" 
                         className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                        onClick={() => handleDelete(question._id)}
+                        onClick={(e) => { e.stopPropagation(); handleDelete(question._id); }}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -250,6 +270,12 @@ export function AllQuestionsPage() {
           </TableBody>
         </Table>
       </div>
+
+      <QuestionDetailsDialog 
+        question={selectedQuestion as any} 
+        isOpen={isDialogOpen} 
+        onClose={() => setIsDialogOpen(false)} 
+      />
 
       {pagination && pagination.totalPages > 1 && (
         <Pagination className="justify-end">
