@@ -44,9 +44,9 @@ export const todoController = {
         return res.status(401).json({ error: 'User not authenticated' });
       }
 
-      // Sorted alphabetically by name (A-Z)
+      // Sorted alphabetically but with numeric ordering (so "60" comes before "3474")
       const todos = await Todo.find({ user: user.id })
-        .collation({ locale: 'en', strength: 2 }) // Case-insensitive sorting
+        .collation({ locale: 'en', strength: 2, numericOrdering: true }) 
         .sort({ name: 1 });
 
       return res.status(200).json({
