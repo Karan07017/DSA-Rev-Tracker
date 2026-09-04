@@ -30,6 +30,12 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await api.post('/auth/google', { credential });
+      
+      // Store token in localStorage as fallback for browsers that block cross-site cookies
+      if (response.data.token) {
+        localStorage.setItem('token', response.data.token);
+      }
+
       set({
         user: response.data.user,
         isAuthenticated: true,
@@ -49,15 +55,18 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true });
     try {
       await api.post('/auth/logout');
-      set({ user: null, isAuthenticated: false, isLoading: false });
     } catch (error) {
-      set({ isLoading: false });
+      console.error("Logout API failed, but clearing local state anyway", error);
+    } finally {
+      localStorage.removeItem('token');
+      set({ user: null, isAuthenticated: false, isLoading: false });
     }
   },
 
   checkAuth: async () => {
     set({ isCheckingAuth: true });
     try {
+      // API call will automatically include Bearer token from localStorage via interceptor
       const response = await api.get('/auth/me');
       set({
         user: response.data.user,
@@ -65,6 +74,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         isCheckingAuth: false,
       });
     } catch (error) {
+      localStorage.removeItem('token'); // Clear invalid token
       set({
         user: null,
         isAuthenticated: false,

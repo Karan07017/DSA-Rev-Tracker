@@ -33,9 +33,10 @@ export const authController = {
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
 
-      // 5. Return user data (without sensitive info)
+      // 5. Return user data and token
       res.status(200).json({
         message: 'Authentication successful',
+        token, // Add token to response so frontend can store it in localStorage
         user: {
           id: user._id,
           name: user.name,
